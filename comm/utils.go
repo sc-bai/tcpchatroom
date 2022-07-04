@@ -71,3 +71,27 @@ func (p *Transfer) WritePkg(msg Msg) error {
 	fmt.Printf("client send len: %v\n", n)
 	return nil
 }
+
+func (p *Transfer) WritePkgEx(b []byte) error {
+	u := uint32(len(b))
+	fmt.Printf("WritePkgEx len: %v\n", u)
+
+	// 数字转为切片发送长度
+	head := make([]byte, 4)
+	binary.BigEndian.PutUint32(head, u)
+
+	n, err2 := p.Sock.Write(head)
+	if n != 4 || err2 != nil {
+		fmt.Printf("WritePkgEx Sock.Write head error: %v len:%d \n", err2, n)
+		return err2
+	}
+
+	n, err2 = p.Sock.Write(b)
+	if err2 != nil {
+		fmt.Printf("WritePkgEx Sock.Write len error: %v\n", err2)
+		return err2
+	}
+
+	fmt.Printf("client send len: %v\n", n)
+	return nil
+}

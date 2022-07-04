@@ -63,6 +63,18 @@ func SelectUserLogin() (err error) {
 
 func SelectUserRegister() (err error) {
 	fmt.Println("**注册**")
+	fmt.Println("请输入用户名")
+	fmt.Scanf("%s\n", &username)
+	fmt.Println("请输入密码")
+	fmt.Scanf("%s\n", &password)
 
+	um := clientprocess.UserManager{
+		Socket: conn,
+	}
+	err = um.UserRegister(username, password)
+	if err != nil {
+		return
+	}
+	fmt.Println("**注册成功**")
 	return nil
 }

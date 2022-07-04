@@ -9,7 +9,7 @@ function:
     with group
     with all
     
-tcpserver user go redis to save info
+tcpserver use go redis to save info
 
 
 go的例子
