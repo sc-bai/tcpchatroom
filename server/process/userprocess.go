@@ -41,26 +41,25 @@ func (p *UserProcess) UserRegister(msg *comm.Msg) (err error) {
 
 	fmt.Printf("[server]: registmsg.UserName: %v registmsg.UserPasswd: %v\n", registmsg.UserName, registmsg.UserPasswd)
 
-	lmg, err2 := p.Redisdb.FindUser(p.Socket.RemoteAddr().String(), registmsg.UserName)
-	if err2 != nil {
-		return err2
-	}
+	lmg := p.Redisdb.FindUser(registmsg.UserName)
 
 	var regRes comm.ServerRes
 	if len(lmg.UserId) > 0 {
 		// 说明存在
 		regRes.Code = comm.ServerFail
 		regRes.Msg = "this name has alread registered"
+		fmt.Println("[server] register failed")
 	} else {
 		// 注册成功 写入缓存
 		p.Redisdb.PutUser(comm.LoginMessage{
 			UserId:     registmsg.UserName + "_id",
 			UserName:   registmsg.UserName,
 			UserPasswd: registmsg.UserPasswd,
-		}, p.Socket.RemoteAddr().String())
+		})
 
 		regRes.Code = comm.ServerSuccess
 		regRes.Msg = "register success"
+		fmt.Println("[server] register success")
 	}
 
 	b, err3 := json.Marshal(regRes)

@@ -45,6 +45,7 @@ func main() {
 
 func HandleConnect(conn net.Conn) (err error) {
 	defer conn.Close()
+	defer fmt.Println("[server]: client outline:", conn.RemoteAddr().String())
 	p := Processor{
 		Socket:  conn,
 		redisDb: g_db,

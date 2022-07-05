@@ -3,7 +3,6 @@ package rediscache
 // redis 采用hash 把clientuser 存储起来
 import (
 	"chatroom/comm"
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -26,7 +25,7 @@ func InitDb() (*redis.Client, error) {
 	return db, err
 }
 
-func (p *RedisDb) PutUser(user comm.LoginMessage, clientip string) error {
+func (p *RedisDb) PutUser(user comm.LoginMessage) error {
 
 	// 单个设置
 	/* _, err := p.DBclient.HSet(user.UserId, "username", user.UserName).Result()
@@ -39,11 +38,6 @@ func (p *RedisDb) PutUser(user comm.LoginMessage, clientip string) error {
 		fmt.Printf("sb hset userpasswd error: %v\n", err)
 		return err
 	}
-	_, err = p.DBclient.HSet(user.UserId, "clientip", user.UserPasswd).Result()
-	if err != nil {
-		fmt.Printf("sb hset clientip error 2: %v\n", err)
-		return err
-	}
 	*/
 
 	userinfo := make(map[string]interface{})
@@ -51,47 +45,42 @@ func (p *RedisDb) PutUser(user comm.LoginMessage, clientip string) error {
 	userinfo["username"] = user.UserName
 	userinfo["userpasswd"] = user.UserPasswd
 
-	s, err := p.DBclient.HMSet(clientip, userinfo).Result()
+	s, err := p.DBclient.HMSet(user.UserName, userinfo).Result()
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return err
 	}
-	fmt.Printf(" DBclient.HMSet ret string: %v\n", s)
+	fmt.Printf("[server]: DBclient.HMSet ret string: %v\n", s)
 	return nil
 }
 
-func (p *RedisDb) DelUser(clientip string) error {
+func (p *RedisDb) DelUser(username string) {
 
 	// 不用差了 直接删
-	/* 	i, err := p.DBclient.HMGet(clientip, "userid", "username", "userpasswd").Result()
+	/* 	i, err := p.DBclient.HMGet(username, "userid", "username", "userpasswd").Result()
 	   	if err != redis.Nil || i == nil {
 	   		fmt.Printf("err: %v\n", err)
 	   		return err // 不存在
 	   	} */
-	_, err := p.DBclient.HDel(clientip).Result()
-	if err != redis.Nil {
-		fmt.Printf("DBclient.HDel err: %v\n", err)
-		return err
-	}
-	return redis.Nil
+	p.DBclient.HDel(username).Result()
 }
 
-func (p *RedisDb) FindUser(clientip, username string) (comm.LoginMessage, error) {
+func (p *RedisDb) FindUser(username string) comm.LoginMessage {
 	var ret comm.LoginMessage
 
-	i, err := p.DBclient.HMGet(clientip, "userid", "username", "userpasswd").Result()
+	i, err := p.DBclient.HMGet(username, "userid", "username", "userpasswd").Result()
 	if err != nil {
 		fmt.Printf("DBclient.HMGet: %v\n", err)
-		return ret, nil
+		return ret
 	}
 
 	if i[0] == nil {
-		return ret, nil
+		return ret
 	}
 
-	fmt.Printf("DBclient.HMGet result: %v\n", i)
+	fmt.Printf("[server]: DBclient.HMGet result: %v\n", i)
 	if len(i) != 3 {
-		return ret, errors.New("hmget len not 3")
+		return ret
 	}
 
 	fmt.Println(" dbclient finduser success..")
@@ -99,5 +88,5 @@ func (p *RedisDb) FindUser(clientip, username string) (comm.LoginMessage, error)
 	ret.UserName = reflect.TypeOf(i[1]).String()
 	ret.UserPasswd = reflect.TypeOf(i[2]).String()
 
-	return ret, redis.Nil
+	return ret
 }

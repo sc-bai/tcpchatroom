@@ -50,7 +50,7 @@ func (p *Transfer) WritePkg(msg Msg) error {
 		return err
 	}
 	u := uint32(len(b))
-	fmt.Printf("WritePkg len: %v\n", u)
+	//fmt.Printf("WritePkg len: %v\n", u)
 
 	// 数字转为切片发送长度
 	head := make([]byte, 4)
@@ -68,7 +68,7 @@ func (p *Transfer) WritePkg(msg Msg) error {
 		return err2
 	}
 
-	fmt.Printf("client send len: %v\n", n)
+	//fmt.Printf("client send len: %v\n", n)
 	return nil
 }
 

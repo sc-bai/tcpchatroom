@@ -24,10 +24,10 @@ func main() {
 
 	for loop {
 		fmt.Println("------------欢迎进入多人聊天系统------------")
-		fmt.Println("------------1、登录聊天室")
-		fmt.Println("------------2、注册用户")
-		fmt.Println("------------3、退出")
-		fmt.Println("------------请选择(1-3):")
+		fmt.Println(" 				1、登录聊天室")
+		fmt.Println("				2、注册用户")
+		fmt.Println("				3、退出")
+		fmt.Println("--------------请选择(1-3):-----------------")
 
 		fmt.Scanf("%d\n", &key)
 		switch key {

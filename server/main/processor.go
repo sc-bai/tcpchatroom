@@ -23,7 +23,7 @@ func (p *Processor) ProcessHandle() (err error) {
 		}
 		msg, err := t.ReadPkg()
 		if err != nil {
-			fmt.Printf("[server]: readpage error: %v\n", err)
+			//fmt.Printf("[server]: readpage error: %v\n", err)
 			return err
 		}
 
@@ -32,19 +32,22 @@ func (p *Processor) ProcessHandle() (err error) {
 
 		switch msg.Code {
 		case comm.CodeLogin:
-			fmt.Println("[server]:user login.")
+			fmt.Println("[server]: ccmd user login.")
 			u := process.UserProcess{
 				Socket:  p.Socket,
 				Redisdb: rdb,
 			}
 			u.UserLogin(&msg)
 		case comm.CodeRegister:
-			fmt.Println("[server]:user register.")
+			fmt.Println("[server]: cmd user register.")
 			u := process.UserProcess{
 				Socket:  p.Socket,
 				Redisdb: rdb,
 			}
-			u.UserRegister(&msg)
+			err2 := u.UserRegister(&msg)
+			if err2 != nil {
+				return err2
+			}
 		case comm.CodeSms:
 			fmt.Println("sms")
 		}
