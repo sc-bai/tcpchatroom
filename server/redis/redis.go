@@ -9,20 +9,21 @@ import (
 	"github.com/go-redis/redis"
 )
 
+var DBclient *redis.Client
+
 type RedisDb struct {
-	DBclient *redis.Client
 }
 
-func InitDb() (*redis.Client, error) {
-	db := redis.NewClient(&redis.Options{
+func InitDb() error {
+	DBclient = redis.NewClient(&redis.Options{
 		Addr:     "127.0.0.1:6379",
 		Password: "",
 		DB:       0,
 	})
 
-	s, err := db.Ping().Result()
+	s, err := DBclient.Ping().Result()
 	fmt.Printf("s: %v\n", s)
-	return db, err
+	return err
 }
 
 func (p *RedisDb) PutUser(user comm.LoginMessage) error {
@@ -45,7 +46,7 @@ func (p *RedisDb) PutUser(user comm.LoginMessage) error {
 	userinfo["username"] = user.UserName
 	userinfo["userpasswd"] = user.UserPasswd
 
-	s, err := p.DBclient.HMSet(user.UserName, userinfo).Result()
+	s, err := DBclient.HMSet(user.UserName, userinfo).Result()
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return err
@@ -62,15 +63,19 @@ func (p *RedisDb) DelUser(username string) {
 	   		fmt.Printf("err: %v\n", err)
 	   		return err // 不存在
 	   	} */
-	p.DBclient.HDel(username).Result()
+	DBclient.HDel(username).Result()
 }
 
 func (p *RedisDb) FindUser(username string) comm.LoginMessage {
 	var ret comm.LoginMessage
 
-	i, err := p.DBclient.HMGet(username, "userid", "username", "userpasswd").Result()
+	i, err := DBclient.HMGet(username, "userid", "username", "userpasswd").Result()
 	if err != nil {
 		fmt.Printf("DBclient.HMGet: %v\n", err)
+
+		if err == redis.Nil {
+			fmt.Println("HmGet redis.nil")
+		}
 		return ret
 	}
 
@@ -84,9 +89,9 @@ func (p *RedisDb) FindUser(username string) comm.LoginMessage {
 	}
 
 	fmt.Println(" dbclient finduser success..")
-	ret.UserId = reflect.TypeOf(i[0]).String()
-	ret.UserName = reflect.TypeOf(i[1]).String()
-	ret.UserPasswd = reflect.TypeOf(i[2]).String()
+	ret.UserId = reflect.ValueOf(i[0]).String()
+	ret.UserName = reflect.ValueOf(i[1]).String()
+	ret.UserPasswd = reflect.ValueOf(i[2]).String()
 
 	return ret
 }

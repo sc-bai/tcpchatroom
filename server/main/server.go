@@ -4,15 +4,11 @@ import (
 	rediscache "chatroom/server/redis"
 	"fmt"
 	"net"
-
-	"github.com/go-redis/redis"
 )
-
-var g_db *redis.Client
 
 func init() {
 	var err error
-	g_db, err = rediscache.InitDb()
+	err = rediscache.InitDb()
 	if err != nil {
 		fmt.Println("[server]initdb error", err)
 	}
@@ -25,8 +21,8 @@ func main() {
 		return
 	}
 	defer l.Close()
-	if g_db != nil {
-		defer g_db.Close()
+	if rediscache.DBclient != nil {
+		defer rediscache.DBclient.Close()
 	}
 
 	fmt.Println("[server]: start server success...")
@@ -47,8 +43,7 @@ func HandleConnect(conn net.Conn) (err error) {
 	defer conn.Close()
 	defer fmt.Println("[server]: client outline:", conn.RemoteAddr().String())
 	p := Processor{
-		Socket:  conn,
-		redisDb: g_db,
+		Socket: conn,
 	}
 	return p.ProcessHandle()
 }

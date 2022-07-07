@@ -3,17 +3,13 @@ package main
 import (
 	"chatroom/comm"
 	"chatroom/server/process"
-	rediscache "chatroom/server/redis"
 	"fmt"
 	"net"
-
-	"github.com/go-redis/redis"
 )
 
 type Processor struct {
-	Socket  net.Conn
-	Data    []byte
-	redisDb *redis.Client
+	Socket net.Conn
+	Data   []byte
 }
 
 func (p *Processor) ProcessHandle() (err error) {
@@ -27,22 +23,17 @@ func (p *Processor) ProcessHandle() (err error) {
 			return err
 		}
 
-		var rdb rediscache.RedisDb
-		rdb.DBclient = g_db
-
 		switch msg.Code {
 		case comm.CodeLogin:
 			fmt.Println("[server]: ccmd user login.")
 			u := process.UserProcess{
-				Socket:  p.Socket,
-				Redisdb: rdb,
+				Socket: p.Socket,
 			}
-			u.UserLogin(&msg)
+			err = u.UserLogin(&msg)
 		case comm.CodeRegister:
 			fmt.Println("[server]: cmd user register.")
 			u := process.UserProcess{
-				Socket:  p.Socket,
-				Redisdb: rdb,
+				Socket: p.Socket,
 			}
 			err2 := u.UserRegister(&msg)
 			if err2 != nil {

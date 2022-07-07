@@ -9,8 +9,7 @@ import (
 )
 
 type UserProcess struct {
-	Socket  net.Conn
-	Redisdb rediscache.RedisDb
+	Socket net.Conn
 }
 
 func (p *UserProcess) UserLogin(msg *comm.Msg) (err error) {
@@ -22,9 +21,40 @@ func (p *UserProcess) UserLogin(msg *comm.Msg) (err error) {
 		return
 	}
 
-	fmt.Printf("loginMessage.UserId: %v\n", loginMessage.UserId)
-	fmt.Printf("loginMessage.UserName: %v\n", loginMessage.UserName)
-	fmt.Printf("loginMessage.UserPasswd: %v\n", loginMessage.UserPasswd)
+	fmt.Printf("loginMessage.UserId: %v loginMessage.UserName: %v loginMessage.UserPasswd: %v\n", loginMessage.UserId, loginMessage.UserName, loginMessage.UserPasswd)
+
+	// 查询服务器是否有缓存并且一致 就可以返回登录成功
+	stRedis := rediscache.RedisDb{}
+	lm := stRedis.FindUser(loginMessage.UserName)
+
+	var regRes comm.ServerRes
+	if len(lm.UserId) > 0 && lm.UserPasswd == loginMessage.UserPasswd {
+		fmt.Println("login success")
+		regRes.Code = comm.ServerSuccess
+	} else if lm.UserPasswd != loginMessage.UserPasswd {
+		fmt.Println("login error1")
+		fmt.Printf("lm.UserPasswd: %v end\n", lm.UserPasswd)
+		fmt.Printf("loginMessage.UserPasswd: %v end\n", loginMessage.UserPasswd)
+
+		regRes.Code = comm.ServerFail
+		regRes.Msg = "passwd error.try again"
+	} else {
+		regRes.Code = comm.ServerFail
+		regRes.Msg = "not reigster, please register first"
+	}
+
+	var sendMsg comm.Msg
+	sendMsg.Code = comm.CodeLoginRes
+	b, _ := json.Marshal(&regRes)
+	sendMsg.Data = string(b)
+
+	t := comm.Transfer{
+		Sock: p.Socket,
+	}
+	err2 := t.WritePkg(sendMsg)
+	if err2 != nil {
+		return err2
+	}
 
 	return nil
 }
@@ -41,7 +71,8 @@ func (p *UserProcess) UserRegister(msg *comm.Msg) (err error) {
 
 	fmt.Printf("[server]: registmsg.UserName: %v registmsg.UserPasswd: %v\n", registmsg.UserName, registmsg.UserPasswd)
 
-	lmg := p.Redisdb.FindUser(registmsg.UserName)
+	stRedis := rediscache.RedisDb{}
+	lmg := stRedis.FindUser(registmsg.UserName)
 
 	var regRes comm.ServerRes
 	if len(lmg.UserId) > 0 {
@@ -51,7 +82,7 @@ func (p *UserProcess) UserRegister(msg *comm.Msg) (err error) {
 		fmt.Println("[server] register failed")
 	} else {
 		// 注册成功 写入缓存
-		p.Redisdb.PutUser(comm.LoginMessage{
+		stRedis.PutUser(comm.LoginMessage{
 			UserId:     registmsg.UserName + "_id",
 			UserName:   registmsg.UserName,
 			UserPasswd: registmsg.UserPasswd,

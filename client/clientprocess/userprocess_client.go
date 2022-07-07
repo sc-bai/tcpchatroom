@@ -42,9 +42,25 @@ func (p *UserManager) ProcessLogin(name, passwd string) error {
 		return err
 	}
 
-	// 接收服务器返回
-	// todo ...
-	return nil
+	m, err2 := t.ReadPkg()
+	if err2 != nil {
+		fmt.Printf("err2: %v\n", err2)
+		return err2
+	}
+
+	if m.Code != comm.CodeLoginRes {
+		return errors.New("type not right")
+	}
+
+	var res comm.ServerRes
+	json.Unmarshal([]byte(m.Data), &res)
+
+	if res.Code == comm.ServerSuccess {
+		return nil
+	} else {
+		fmt.Printf("register ret: res.Msg: %v\n", res.Msg)
+		return errors.New(res.Msg)
+	}
 }
 
 func (p *UserManager) UserRegister(name, passwd string) error {

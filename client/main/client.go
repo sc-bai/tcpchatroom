@@ -23,16 +23,21 @@ func main() {
 	}
 
 	for loop {
-		fmt.Println("------------欢迎进入多人聊天系统------------")
+		fmt.Println("------------------------欢迎进入多人聊天系统------------------------")
 		fmt.Println(" 				1、登录聊天室")
 		fmt.Println("				2、注册用户")
 		fmt.Println("				3、退出")
-		fmt.Println("--------------请选择(1-3):-----------------")
+		fmt.Println("--------------------------请选择(1-3):-----------------------------")
 
 		fmt.Scanf("%d\n", &key)
 		switch key {
 		case 1:
-			SelectUserLogin()
+			err = SelectUserLogin()
+			if err != nil {
+				fmt.Printf("err: %v\n", err)
+			} else {
+				ShowLoginedUI()
+			}
 		case 2:
 			SelectUserRegister()
 		case 3:
@@ -73,6 +78,7 @@ func SelectUserRegister() (err error) {
 	}
 	err = um.UserRegister(username, password)
 	if err != nil {
+		fmt.Println("**注册失败**")
 		return
 	}
 	fmt.Println("**注册成功**")
