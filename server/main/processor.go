@@ -30,6 +30,9 @@ func (p *Processor) ProcessHandle() (err error) {
 				Socket: p.Socket,
 			}
 			err = u.UserLogin(&msg)
+			if err != nil {
+				fmt.Printf("[server] Userlogin error: %v\n", err)
+			}
 		case comm.CodeRegister:
 			fmt.Println("[server]: cmd user register.")
 			u := process.UserProcess{
@@ -39,8 +42,18 @@ func (p *Processor) ProcessHandle() (err error) {
 			if err2 != nil {
 				return err2
 			}
-		case comm.CodeSms:
-			fmt.Println("sms")
+
+		case comm.CodeUserList:
+			fmt.Println("[server]: cmd user lsit.")
+
+			u := process.UserProcess{
+				Socket: p.Socket,
+			}
+
+			err = u.UserList(&msg)
+			if err != nil {
+				fmt.Printf("[server]: userlist error,%v\n", err)
+			}
 		}
 	}
 }

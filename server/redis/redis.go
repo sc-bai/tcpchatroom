@@ -61,3 +61,13 @@ func (p *RedisDb) FindUser(username string) comm.LoginMessage {
 
 	return ret
 }
+
+func (p *RedisDb) ListUserOnline() []string {
+	s, err := DBclient.HKeys(g_userkey).Result()
+	if err != nil {
+		fmt.Printf("ListUserOnline: %v\n", err)
+		return s
+	}
+
+	return s
+}

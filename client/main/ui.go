@@ -17,7 +17,7 @@ func ShowLoginedUI() {
 		switch secondkey {
 		case 1:
 			fmt.Println("查看在线人员列表")
-
+			SelectUserList()
 		case 2:
 			fmt.Println("请输入要私聊的名称")
 

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strings"
 )
 
 // var g_conn net.Conn
@@ -108,4 +109,39 @@ func (p *UserManager) UserRegister(name, passwd string) error {
 		fmt.Printf("register ret: res.Msg: %v\n", res.Msg)
 		return errors.New(res.Msg)
 	}
+}
+
+func (p *UserManager) ListUser() ([]string, error) {
+
+	var ret []string
+	var err error
+	var msg comm.Msg
+	reg := &comm.RegistMsg{
+		UserName:   "test",
+		UserPasswd: "passwd",
+	}
+
+	b, _ := json.Marshal(reg)
+	/* msg := comm.Msg{
+		Code: comm.CodeUserList,
+		Data: string(b),
+	} */
+	msg.Code = comm.CodeUserList
+	msg.Data = string(b)
+	t := comm.Transfer{
+		Sock: p.Socket,
+	}
+
+	err2 := t.WritePkg(msg)
+	if err2 != nil {
+		fmt.Printf("err2: %v\n", err2)
+		return ret, err2
+	}
+	m, err := t.ReadPkg()
+	if m.Code != comm.CodeUserListRes {
+		return ret, err
+	}
+
+	ret = strings.Split(m.Data, "-")
+	return ret, err
 }

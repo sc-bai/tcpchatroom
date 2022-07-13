@@ -4,6 +4,7 @@ import (
 	"chatroom/comm"
 	rediscache "chatroom/server/redis"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 )
@@ -59,7 +60,6 @@ func (p *UserProcess) UserLogin(msg *comm.Msg) (err error) {
 	return nil
 }
 
-// 还有问题
 func (p *UserProcess) UserRegister(msg *comm.Msg) (err error) {
 
 	var registmsg comm.RegistMsg
@@ -114,4 +114,30 @@ func (p *UserProcess) UserRegister(msg *comm.Msg) (err error) {
 	}
 
 	return nil
+}
+
+func (p *UserProcess) UserList(msg *comm.Msg) error {
+	if msg.Code != comm.CodeUserList {
+		return errors.New("code type error")
+	}
+	stRedis := rediscache.RedisDb{}
+	s := stRedis.ListUserOnline()
+
+	var data string
+	for _, v := range s {
+		data += v
+		data += "-"
+	}
+	if len(data) > 0 {
+		data = data[0:(len(data) - 1)]
+	}
+
+	msgRet := comm.Msg{
+		Code: comm.CodeUserListRes,
+		Data: data,
+	}
+	trans := comm.Transfer{
+		Sock: p.Socket,
+	}
+	return trans.WritePkg(msgRet)
 }

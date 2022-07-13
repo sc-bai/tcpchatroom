@@ -84,3 +84,19 @@ func SelectUserRegister() (err error) {
 	fmt.Println("**注册成功**")
 	return nil
 }
+
+func SelectUserList() error {
+	fmt.Println("**在线列表**")
+	um := clientprocess.UserManager{
+		Socket: conn,
+	}
+	s, err := um.ListUser()
+	if err != nil {
+		return err
+	}
+	for _, v := range s {
+		fmt.Println(v)
+	}
+
+	return nil
+}

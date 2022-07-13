@@ -50,7 +50,7 @@ func (p *Transfer) WritePkg(msg Msg) error {
 		return err
 	}
 	u := uint32(len(b))
-	//fmt.Printf("WritePkg len: %v\n", u)
+	fmt.Printf("WritePkg len: %v msg: %q\n", u, b)
 
 	// 数字转为切片发送长度
 	head := make([]byte, 4)
@@ -61,14 +61,14 @@ func (p *Transfer) WritePkg(msg Msg) error {
 		fmt.Printf("Sock.Write head error: %v len:%d \n", err2, n)
 		return err2
 	}
-
+	fmt.Printf("p.Sock.Write(head): %v\n", n)
 	n, err2 = p.Sock.Write(b)
 	if err2 != nil {
 		fmt.Printf("Sock.Write len error: %v\n", err2)
 		return err2
 	}
 
-	//fmt.Printf("client send len: %v\n", n)
+	fmt.Printf("client send len: %v\n", n)
 	return nil
 }
 

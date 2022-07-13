@@ -5,7 +5,14 @@ const (
 	CodeRegisterRes // 服务器返回
 	CodeLogin
 	CodeLoginRes // 服务器返回
+	CodeUserList
+	CodeUserListRes
 	CodeSms
+)
+
+const (
+	CodePrivateChat = 100 + iota
+	CodePrivateChatRes
 )
 
 const (
@@ -30,7 +37,14 @@ type LoginMessage struct {
 	UserPasswd string `json:"userpasswd"`
 }
 
-type SmsMessage struct {
+type SmsPrivateChat struct {
+	UserName string `json:"username"`
+	ChatData string `json:"data"`
+}
+
+type SmsMsg struct {
+	Code    uint8  `json:"code"`
+	SmsData string `json:"smsdata"`
 }
 
 // 通信消息结构体
