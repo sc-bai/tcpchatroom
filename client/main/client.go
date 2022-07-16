@@ -2,6 +2,7 @@ package main
 
 import (
 	"chatroom/client/clientprocess"
+	"chatroom/comm"
 	"fmt"
 	"net"
 	"os"
@@ -92,6 +93,7 @@ func SelectUserList() error {
 	}
 	s, err := um.ListUser()
 	if err != nil {
+		fmt.Printf("err: %v\n", err)
 		return err
 	}
 	for _, v := range s {
@@ -99,4 +101,25 @@ func SelectUserList() error {
 	}
 
 	return nil
+}
+
+func SelectUserPrivateChat() (err error) {
+	fmt.Println("**私聊**")
+	var strName string
+	var strData string
+	fmt.Println("请输入要私聊的用户名称：")
+	fmt.Scanf("%s\n", &strName)
+	fmt.Println("请输入要发送的信息：")
+	fmt.Scanf("%s\n", &strData)
+
+	// Msg->SmsMsg->SmsPrivateChat
+	var SmsPriMsg comm.SmsPrivateChat
+	SmsPriMsg.ChatData = strData
+	SmsPriMsg.SendUserName = username
+	SmsPriMsg.RecvUserName = strName
+
+	sm := clientprocess.SmsManager{
+		Socket: conn,
+	}
+	return sm.Sms_PrivateChat(SmsPriMsg)
 }

@@ -10,7 +10,8 @@ import (
 )
 
 type UserProcess struct {
-	Socket net.Conn
+	Socket   net.Conn
+	UserName string
 }
 
 func (p *UserProcess) UserLogin(msg *comm.Msg) (err error) {
@@ -32,6 +33,10 @@ func (p *UserProcess) UserLogin(msg *comm.Msg) (err error) {
 	if len(lm.UserId) > 0 && lm.UserPasswd == loginMessage.UserPasswd {
 		fmt.Println("login success")
 		regRes.Code = comm.ServerSuccess
+
+		// 塞进监管账号
+		p.UserName = loginMessage.UserName
+
 	} else if lm.UserPasswd != loginMessage.UserPasswd {
 		fmt.Println("login error1")
 		fmt.Printf("lm.UserPasswd: %v end\n", lm.UserPasswd)
@@ -55,6 +60,18 @@ func (p *UserProcess) UserLogin(msg *comm.Msg) (err error) {
 	err2 := t.WritePkg(sendMsg)
 	if err2 != nil {
 		return err2
+	}
+
+	if regRes.Code == comm.ServerSuccess {
+
+		UserManager.AddOnlineUser(p)
+
+		// 通知上线
+		sms := SmsMessage{}
+		err3 := sms.NotifyUserOnline(loginMessage.UserName)
+		if err3 != nil {
+			fmt.Printf("NotifyUserOnline error: %v\n", err3)
+		}
 	}
 
 	return nil
@@ -120,14 +137,13 @@ func (p *UserProcess) UserList(msg *comm.Msg) error {
 	if msg.Code != comm.CodeUserList {
 		return errors.New("code type error")
 	}
-	stRedis := rediscache.RedisDb{}
-	s := stRedis.ListUserOnline()
 
 	var data string
-	for _, v := range s {
-		data += v
+	for _, v := range UserManager.onlineUsers {
+		data += v.UserName
 		data += "-"
 	}
+
 	if len(data) > 0 {
 		data = data[0:(len(data) - 1)]
 	}

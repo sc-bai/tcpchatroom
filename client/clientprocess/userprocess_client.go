@@ -141,7 +141,7 @@ func (p *UserManager) ListUser() ([]string, error) {
 	if m.Code != comm.CodeUserListRes {
 		return ret, err
 	}
-
+	fmt.Printf("m.Data: %v\n", m.Data)
 	ret = strings.Split(m.Data, "-")
 	return ret, err
 }

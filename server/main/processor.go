@@ -19,7 +19,10 @@ func (p *Processor) ProcessHandle() (err error) {
 		}
 		msg, err := t.ReadPkg()
 		if err != nil {
-			//fmt.Printf("[server]: readpage error: %v\n", err)
+
+			// 客户端断开连接
+			process.UserManager.DeleteOnlineUserWithConn(p.Socket)
+
 			return err
 		}
 
@@ -40,7 +43,7 @@ func (p *Processor) ProcessHandle() (err error) {
 			}
 			err2 := u.UserRegister(&msg)
 			if err2 != nil {
-				return err2
+				fmt.Printf("[server]: UserRegister error. %v\n", err2)
 			}
 
 		case comm.CodeUserList:
@@ -53,6 +56,13 @@ func (p *Processor) ProcessHandle() (err error) {
 			err = u.UserList(&msg)
 			if err != nil {
 				fmt.Printf("[server]: userlist error,%v\n", err)
+			}
+
+		case comm.CodeSms:
+			s := process.SmsMessage{}
+			err = s.HandleSmsMessage(msg)
+			if err != nil {
+				fmt.Println("[server]:handle sns message error")
 			}
 		}
 	}

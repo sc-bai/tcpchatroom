@@ -11,8 +11,14 @@ const (
 )
 
 const (
-	CodePrivateChat = 100 + iota
-	CodePrivateChatRes
+	MAXONLINEUSER = 1024
+)
+
+const (
+	CodeSmsPrivateChat = 100 + iota
+	CodeSmsPrivateChatRes
+	CodeSmsGorup
+	CodeSmsGroupRes
 )
 
 const (
@@ -38,8 +44,10 @@ type LoginMessage struct {
 }
 
 type SmsPrivateChat struct {
-	UserName string `json:"username"`
-	ChatData string `json:"data"`
+	SendUserId   string `json:"userid"`
+	SendUserName string `json:"sendusername"`
+	RecvUserName string `json:"recvusername"` // 私聊名称
+	ChatData     string `json:"data"`         // 私聊数据
 }
 
 type SmsMsg struct {
